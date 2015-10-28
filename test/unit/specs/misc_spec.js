@@ -34,14 +34,14 @@ describe('Misc', function () {
     var spy1 = jasmine.createSpy('attached')
     var spy2 = jasmine.createSpy('detached')
     var el = document.createElement('div')
-    el.innerHTML = '<outer v-ref="outter"><inner></inner></outer>'
+    el.innerHTML = '<outer v-ref:outter><inner></inner></outer>'
     document.body.appendChild(el)
 
     var vm = new Vue({
       el: el,
       components: {
         outer: {
-          template: '<content></content>'
+          template: '<slot></slot>'
         },
         inner: {
           template: 'hi',
@@ -51,11 +51,11 @@ describe('Misc', function () {
       }
     })
     expect(spy1).toHaveBeenCalled()
-    vm.$.outter.$remove()
+    vm.$refs.outter.$remove()
     expect(spy2).toHaveBeenCalled()
   })
 
-  it('v-repeat on component root node with replace:true', function () {
+  it('v-for on component root node with replace:true', function () {
     var el = document.createElement('div')
     var vm = new Vue({
       el: el,
@@ -65,7 +65,7 @@ describe('Misc', function () {
           data: function () {
             return { list: [1, 2, 3] }
           },
-          template: '<div v-repeat="list">{{$value}}</div>',
+          template: '<div v-for="n in list">{{n}}</div>',
           replace: true
         }
       }
@@ -74,11 +74,11 @@ describe('Misc', function () {
   })
 
   // #922
-  it('template repeat inside svg', function () {
+  it('template v-for inside svg', function () {
     var el = document.createElement('div')
     new Vue({
       el: el,
-      template: '<svg><template v-repeat="list"><text>{{$value}}</text></template></svg>',
+      template: '<svg><template v-for="n in list"><text>{{n}}</text></template></svg>',
       data: {
         list: [1, 2, 3]
       }
@@ -190,7 +190,7 @@ describe('Misc', function () {
     var spy3 = jasmine.createSpy('test')
     var spy4 = jasmine.createSpy('deep-mutated')
     var vm = new Vue({
-      el: 'body',
+      el: document.createElement('div'),
       data: {
         obj: {},
         arr: [],
@@ -218,8 +218,8 @@ describe('Misc', function () {
     })
     var test = []
     var obj2 = vm.obj2
-    vm.$add('test', test)
-    obj2.$add('test', 123)
+    vm.$set('test', test)
+    __.set(obj2, 'test', 123)
     Vue.nextTick(function () {
       expect(spy1).not.toHaveBeenCalled()
       expect(spy2).not.toHaveBeenCalled()
@@ -227,72 +227,6 @@ describe('Misc', function () {
       expect(spy4).toHaveBeenCalledWith(obj2, obj2)
       done()
     })
-  })
-
-  it('strict mode', function () {
-    Vue.config.strict = true
-    new Vue({
-      el: document.createElement('div'),
-      template: '<test></test>',
-      components: {
-        test: {
-          template: '<div v-strict>hi</div>'
-        }
-      },
-      directives: {
-        strict: function () {}
-      }
-    })
-    expect(hasWarned(_, 'Failed to resolve directive: strict')).toBe(true)
-    Vue.config.strict = false
-  })
-
-  it('strict mode for repeat instances', function () {
-    Vue.config.strict = true
-    var vm = new Vue({
-      el: document.createElement('div'),
-      template: '<div v-repeat="list"><test></test></div>',
-      data: {
-        list: [1, 2]
-      },
-      components: {
-        test: {
-          template: 'hi'
-        }
-      }
-    })
-    expect(_.warn).not.toHaveBeenCalled()
-    expect(vm.$el.textContent).toBe('hihi')
-    Vue.config.strict = false
-  })
-
-  it('class interpolation and v-class should work together', function (done) {
-    var el = document.createElement('div')
-    el.setAttribute('class', 'a {{classB}}')
-    el.setAttribute('v-class', 'c: showC')
-    var vm = new Vue({
-      el: el,
-      data: {
-        classB: 'b',
-        showC: true
-      }
-    })
-    assertClasses(['a', 'b', 'c'])
-    vm.classB = 'bb'
-    vm.showC = false
-    Vue.nextTick(function () {
-      assertClasses(['a', 'bb'])
-      done()
-    })
-
-    function assertClasses (expectedClasses) {
-      var classes = el.className.trim().split(/\s+/)
-      expect(classes.length).toBe(expectedClasses.length)
-      var has = expectedClasses.every(function (cls) {
-        return classes.indexOf(cls) > -1
-      })
-      expect(has).toBe(true)
-    }
   })
 
   it('handle interpolated textarea', function (done) {
@@ -312,29 +246,6 @@ describe('Misc', function () {
     })
   })
 
-  it('resolveAsset for repeat instance inside content in strict mode', function () {
-    Vue.config.strict = true
-    var el = document.createElement('div')
-    el.innerHTML =
-      '<outer>' +
-        '<template v-repeat="item in items">' +
-          '<inner>{{item}}</inner>' +
-        '</template>' +
-      '</outer>'
-    new Vue({
-      el: el,
-      data: {
-        items: [1, 2, 3]
-      },
-      components: {
-        outer: { template: '<content></content>' },
-        inner: { template: '<content></content>' }
-      }
-    })
-    expect(el.textContent).toBe('123')
-    Vue.config.strict = false
-  })
-
   it('nested object $set should trigger parent array notify', function (done) {
     var vm = new Vue({
       el: document.createElement('div'),
@@ -344,7 +255,7 @@ describe('Misc', function () {
       }
     })
     expect(vm.$el.textContent).toBe(JSON.stringify(vm.items, null, 2))
-    vm.items[0].$set('a', 123)
+    __.set(vm.items[0], 'a', 123)
     Vue.nextTick(function () {
       expect(vm.$el.textContent).toBe(JSON.stringify(vm.items, null, 2) + '123')
       done()

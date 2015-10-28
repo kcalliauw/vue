@@ -73,13 +73,6 @@ if (_.inBrowser && !_.isIE9) {
         expect(spy).toHaveBeenCalled()
       })
 
-      it('removeThenAppend', function () {
-        transition.removeThenAppend(target, el, vm, spy)
-        expect(parent.childNodes.length).toBe(0)
-        expect(el.firstChild).toBe(target)
-        expect(spy).toHaveBeenCalled()
-      })
-
     })
 
     describe('Skipping', function () {
@@ -108,8 +101,9 @@ if (_.inBrowser && !_.isIE9) {
 
       it('skip vm with parent still being compiled', function () {
         el.__v_trans = new Transition(el, 'test', null, vm)
-        var child = vm.$addChild({
-          el: el
+        var child = new Vue({
+          el: el,
+          parent: vm
         })
         expect(child._isCompiled).toBe(true)
         transition.apply(el, 1, op, child, cb)

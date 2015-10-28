@@ -1,4 +1,5 @@
 var mergeOptions = require('../util').mergeOptions
+var uid = 0
 
 /**
  * The main init sequence. This is called for every
@@ -21,11 +22,13 @@ exports._init = function (options) {
     ? this.$parent.$root
     : this
   this.$children = []
-  this.$ = {}           // child vm references
-  this.$$ = {}          // element references
+  this.$refs = {}       // child vm references
+  this.$els = {}        // element references
   this._watchers = []   // all watchers as an array
   this._directives = [] // all directives
-  this._childCtors = {} // inherit:true constructors
+
+  // a uid
+  this._uid = uid++
 
   // a flag to avoid this being observed
   this._isVue = true
@@ -37,8 +40,9 @@ exports._init = function (options) {
 
   // fragment instance properties
   this._isFragment = false
-  this._fragmentStart =    // @type {CommentNode}
-  this._fragmentEnd = null // @type {CommentNode}
+  this._fragment =         // @type {DocumentFragment}
+  this._fragmentStart =    // @type {Text|Comment}
+  this._fragmentEnd = null // @type {Text|Comment}
 
   // lifecycle state
   this._isCompiled =
@@ -55,16 +59,11 @@ exports._init = function (options) {
   this._context = options._context || this.$parent
 
   // scope:
-  // if this is inside an inline v-repeat, the scope
+  // if this is inside an inline v-for, the scope
   // will be the intermediate scope created for this
   // repeat fragment. this is used for linking props
   // and container directives.
   this._scope = options._scope
-
-  // set ref
-  if (options._ref) {
-    (this._scope || this._context).$[options._ref] = this
-  }
 
   // fragment:
   // if this instance is compiled inside a Fragment, it
@@ -80,9 +79,10 @@ exports._init = function (options) {
     this.$parent.$children.push(this)
   }
 
-  // props used in v-repeat diffing
-  this._reused = false
-  this._staggerOp = null
+  // set ref
+  if (options._ref) {
+    (this._scope || this._context).$refs[options._ref] = this
+  }
 
   // merge options.
   options = this.$options = mergeOptions(

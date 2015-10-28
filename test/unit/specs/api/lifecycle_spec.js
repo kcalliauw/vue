@@ -96,7 +96,7 @@ if (_.inBrowser) {
           data: { test: 'frag' }
         })
         vm.$mount(frag)
-        expect(vm._blockFragment).toBe(frag)
+        expect(vm._fragment).toBe(frag)
         expect(vm.$el.nextSibling.textContent).toBe('frag')
       })
 
@@ -196,8 +196,8 @@ if (_.inBrowser) {
 
       it('parent', function () {
         var parent = new Vue()
-        var child = parent.$addChild()
-        var child2 = parent.$addChild()
+        var child = new Vue({ parent: parent })
+        var child2 = new Vue({ parent: parent })
         expect(parent.$children.length).toBe(2)
         child.$destroy()
         expect(parent.$children.length).toBe(1)
@@ -207,7 +207,7 @@ if (_.inBrowser) {
 
       it('children', function () {
         var parent = new Vue()
-        var child = parent.$addChild()
+        var child = new Vue({ parent: parent })
         parent.$destroy()
         expect(child._isDestroyed).toBe(true)
       })
@@ -253,13 +253,13 @@ if (_.inBrowser) {
 
       it('safely teardown partial compilation', function () {
         var vm = new Vue({
-          template: '<div v-component="dialog"><div v-partial="hello"></div></div>',
+          template: '<test><partial name="hello"></partial></test>',
           partials: {
             hello: 'Hello {{name}}'
           },
           components: {
-            dialog: {
-              template: '<content>'
+            test: {
+              template: '<slot></slot>'
             }
           }
         }).$mount()

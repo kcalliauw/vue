@@ -57,7 +57,7 @@ if (_.inBrowser) {
       expect(res instanceof DocumentFragment).toBe(true)
 
       // single component: <component>
-      options.template = '<component is="{{hi}}"></component>'
+      options.template = '<component bind-is="hi"></component>'
       res = transclude(el, options)
       expect(res instanceof DocumentFragment).toBe(true)
 
@@ -72,8 +72,8 @@ if (_.inBrowser) {
       res = transclude(el, options)
       expect(res instanceof DocumentFragment).toBe(true)
 
-      // single component: v-component
-      options.template = '<div v-component="test"></div>'
+      // single component: is
+      options.template = '<div is="test"></div>'
       res = transclude(el, options)
       expect(res instanceof DocumentFragment).toBe(true)
 
@@ -83,8 +83,13 @@ if (_.inBrowser) {
       res = transclude(el, options)
       expect(res instanceof DocumentFragment).toBe(true)
 
-      // v-repeat
-      options.template = '<div v-repeat="list"></div>'
+      // v-for
+      options.template = '<div v-for="item in list"></div>'
+      res = transclude(el, options)
+      expect(res instanceof DocumentFragment).toBe(true)
+
+      // v-if
+      options.template = '<div v-if="ok"></div>'
       res = transclude(el, options)
       expect(res instanceof DocumentFragment).toBe(true)
     })

@@ -30,9 +30,10 @@ var demo = new Vue({
 
   created: function () {
     this.fetchData()
-    this.$watch('currentBranch', function () {
-      this.fetchData()
-    })
+  },
+
+  watch: {
+    currentBranch: 'fetchData'
   },
 
   filters: {

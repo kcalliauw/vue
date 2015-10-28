@@ -17,6 +17,7 @@ Here are some links you may find helpful:
 
 Get help from other Vue.js users:
 
+* [Vue.js official forum](http://forum.vuejs.org)
 * [Vue.js on Twitter](https://twitter.com/vuejs)
 * [Vue.js on Gitter](https://gitter.im/vuejs/vue)
 

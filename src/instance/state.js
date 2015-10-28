@@ -37,7 +37,7 @@ exports._initProps = function () {
   // make sure to convert string selectors into element now
   el = options.el = _.query(el)
   this._propsUnlinkFn = el && el.nodeType === 1 && props
-    // props must be linked in proper scope if inside v-repeat
+    // props must be linked in proper scope if inside v-for
     ? compiler.compileAndLinkProps(this, el, props, this._scope)
     : null
 }
@@ -90,19 +90,6 @@ exports._setData = function (newData) {
   var oldData = this._data
   this._data = newData
   var keys, key, i
-  // copy props.
-  // this should only happen during a v-repeat of component
-  // that also happens to have compiled props.
-  var props = this.$options.props
-  if (props) {
-    i = props.length
-    while (i--) {
-      key = props[i].name
-      if (key !== '$data' && !newData.hasOwnProperty(key)) {
-        newData.$set(key, oldData[key])
-      }
-    }
-  }
   // unproxy keys not present in new data
   keys = Object.keys(oldData)
   i = keys.length
@@ -172,17 +159,8 @@ exports._unproxy = function (key) {
  */
 
 exports._digest = function () {
-  var i = this._watchers.length
-  while (i--) {
+  for (var i = 0, l = this._watchers.length; i < l; i++) {
     this._watchers[i].update(true) // shallow updates
-  }
-  var children = this.$children
-  i = children.length
-  while (i--) {
-    var child = children[i]
-    if (child.$options.inherit) {
-      child._digest()
-    }
   }
 }
 
@@ -236,8 +214,8 @@ function makeComputedGetter (getter, owner) {
 
 /**
  * Setup instance methods. Methods must be bound to the
- * instance since they might be called by children
- * inheriting them.
+ * instance since they might be passed down as a prop to
+ * child components.
  */
 
 exports._initMethods = function () {
